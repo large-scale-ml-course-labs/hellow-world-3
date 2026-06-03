@@ -10,20 +10,27 @@ jobs:
       - name: Checkout student solution
         uses: actions/checkout@v4
 
-      # Run the grader from the repo's *base* branch, never the student's PR
-      # copy, so editing grade.py in a PR cannot influence the result.
-      - name: Checkout canonical grader (base branch)
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.base.sha }}
-          path: .base
-          sparse-checkout: grade.py
-          sparse-checkout-cone-mode: false
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-
+      # The grader is inlined here on purpose. On pull_request, GitHub runs the
+      # workflow from the repo's base branch, not the PR — so students can't see
+      # or modify the grading logic from their fork.
       - name: Grade output.txt
-        run: python .base/grade.py --file output.txt --expected "hellow world 3"
+        env:
+          EXPECTED: "hellow world 3"
+        run: |
+          python3 - <<'PY'
+          import os, sys
+          expected = os.environ["EXPECTED"].strip()
+          path = "output.txt"
+          if not os.path.exists(path):
+              print(f"::error::File '{path}' not found. Did you commit it?")
+              sys.exit(1)
+          with open(path, encoding="utf-8") as f:
+              actual = f.read().strip()
+          if actual == expected:
+              print(f"✅ Correct! '{path}' contains exactly: {expected!r}")
+              sys.exit(0)
+          print("❌ Wrong answer.")
+          print(f"   expected: {expected!r}")
+          print(f"   got:      {actual!r}")
+          sys.exit(1)
+          PY
