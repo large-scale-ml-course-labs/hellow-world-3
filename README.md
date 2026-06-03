@@ -16,10 +16,6 @@ result as a Pull Request. An automated check will grade it.
    ```
    hellow world 3
    ```
-   i.e.
-   ```python
-   print("hellow world 3")
-   ```
 4. Run it and save the output to `output.txt`:
    ```bash
    python print.py > output.txt
