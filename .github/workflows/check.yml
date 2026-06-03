@@ -10,11 +10,15 @@ jobs:
       - name: Checkout student solution
         uses: actions/checkout@v4
 
-      - name: Checkout grader
+      # Run the grader from the repo's *base* branch, never the student's PR
+      # copy, so editing grade.py in a PR cannot influence the result.
+      - name: Checkout canonical grader (base branch)
         uses: actions/checkout@v4
         with:
-          repository: large-scale-ml-course-labs/grader
-          path: .grader
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: .base
+          sparse-checkout: grade.py
+          sparse-checkout-cone-mode: false
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -22,4 +26,4 @@ jobs:
           python-version: "3.x"
 
       - name: Grade output.txt
-        run: python .grader/grade.py --file output.txt --expected "hellow world 3"
+        run: python .base/grade.py --file output.txt --expected "hellow world 3"
