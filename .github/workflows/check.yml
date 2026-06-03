@@ -1,0 +1,25 @@
+name: Check
+
+on:
+  pull_request:
+
+jobs:
+  grade:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout student solution
+        uses: actions/checkout@v4
+
+      - name: Checkout grader
+        uses: actions/checkout@v4
+        with:
+          repository: large-scale-ml-course-labs/grader
+          path: .grader
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Grade output.txt
+        run: python .grader/grade.py --file output.txt --expected "hellow world 3"
